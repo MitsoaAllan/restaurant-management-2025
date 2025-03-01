@@ -20,7 +20,7 @@ public class DishDAO implements CRUDOperations<Dish> {
     public List<Dish> getAll(int size, int page) {
         List<Dish> dishes = new ArrayList<>();
         String sql = """
-                SELECT d.id_dish,d.name,d.unit_price,
+                SELECT d.id_dish,d.name,d.unit_price
                 FROM dish_ingredient di
                 JOIN ingredient i
                     ON di.id_ingredient = i.id_ingredient
@@ -67,7 +67,7 @@ public class DishDAO implements CRUDOperations<Dish> {
             ResultSet rs = ps.executeQuery();
             while(rs.next()) {
                 DishIngredient ingredient = new DishIngredient(
-                        new Ingredient(rs.getString("name"),rs.getDouble("unit_price"),Unit.valueOf(rs.getString("unit")),rs.getDate("update_time").toLocalDate(),List.of()),
+                        new Ingredient(rs.getString("name"),rs.getDouble("unit_price"),Unit.valueOf(rs.getString("unit")),rs.getDate("update_time").toLocalDate()),
                         rs.getDouble("required_quantity")
                 );
                 ingredients.add(ingredient);

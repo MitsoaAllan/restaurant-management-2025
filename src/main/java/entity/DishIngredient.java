@@ -1,12 +1,19 @@
 package entity;
 
 public class DishIngredient {
-    private final Ingredient ingredient;
-    private final double requiredQuantity;
+    private Ingredient ingredient;
+    private double requiredQuantity;
 
     public DishIngredient(Ingredient ingredient, double requiredQuantity) {
         this.ingredient = ingredient;
         this.requiredQuantity = requiredQuantity;
+    }
+    public DishIngredient() {
+
+    }
+
+    public double getCost(){
+        return requiredQuantity * ingredient.getUnitPrice();
     }
 
     public Ingredient getIngredient() { return ingredient; }

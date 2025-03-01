@@ -1,17 +1,24 @@
 package entity;
 
+import db.DataSource;
+
+import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 public class Ingredient {
+    private final DataSource dataSource = new DataSource();
+
     private int idIngredient;
     private String name;
     private double unitPrice;
     private Unit unit;
     private LocalDate updateDateTime;
     private List<IngredientPriceHistory> priceHistory;
+    private List<Movement> movements;
 
     public Ingredient() {
 
@@ -24,6 +31,20 @@ public class Ingredient {
         this.priceHistory = priceHistory;
     }
 
+    public Ingredient(String name, double unitPrice, Unit unit, LocalDate updateDateTime) {
+        this.name = name;
+        this.unitPrice = unitPrice;
+        this.unit = unit;
+        this.updateDateTime = updateDateTime;
+    }
+    public Ingredient(int idIngredient,String name, double unitPrice, Unit unit, LocalDate updateDateTime) {
+        this.idIngredient = idIngredient;
+        this.name = name;
+        this.unitPrice = unitPrice;
+        this.unit = unit;
+        this.updateDateTime = updateDateTime;
+    }
+
     public Ingredient(int idIngredient, String name, double unitPrice, Unit unit, LocalDate updateDateTime, List<IngredientPriceHistory> priceHistory) {
         this.idIngredient = idIngredient;
         this.name = name;
@@ -31,6 +52,16 @@ public class Ingredient {
         this.unit = unit;
         this.updateDateTime = updateDateTime;
         this.priceHistory = priceHistory;
+    }
+
+    public Ingredient(int idIngredient, String name, double unitPrice, Unit unit, LocalDate updateDateTime, List<IngredientPriceHistory> priceHistory, List<Movement> movements) {
+        this.idIngredient = idIngredient;
+        this.name = name;
+        this.unitPrice = unitPrice;
+        this.unit = unit;
+        this.updateDateTime = updateDateTime;
+        this.priceHistory = priceHistory;
+        this.movements = movements;
     }
 
     public int getIdIngredient() { return idIngredient; }
@@ -55,6 +86,13 @@ public class Ingredient {
         this.priceHistory = priceHistory;
     }
 
+    public List<Movement> getMovements() {
+        return movements;
+    }
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
+    }
+
     public double getLatestIngredientPrice() {
         return priceHistory.stream()
                 .max(Comparator.comparing(IngredientPriceHistory::getDate))
@@ -70,6 +108,29 @@ public class Ingredient {
                 .orElse(unitPrice);
     }
 
+    public double getStockAtDate(LocalDateTime date) throws SQLException {
+        try(Connection conn = dataSource.getConnection()) {
+            String sql = """
+                SELECT
+                (SUM(CASE WHEN move_type = 'IN' THEN quantity ELSE 0 END), 0) -
+                (SUM(CASE WHEN move_type = 'OUT' THEN quantity ELSE 0 END), 0)
+                FROM move
+                WHERE id_ingredient = ? AND move.update_move <= ?
+            """;
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, this.idIngredient);
+                stmt.setTimestamp(2, Timestamp.valueOf(date));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getDouble(1);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
 
     @Override
     public String toString() {

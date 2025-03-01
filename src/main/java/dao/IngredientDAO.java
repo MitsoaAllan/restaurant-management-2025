@@ -79,4 +79,20 @@ public class IngredientDAO implements CRUDOperations<Ingredient> {
         }
         return ingredients;
     }
+
+    public void saveAll(List<Ingredient> ingredients) {
+        ingredients.forEach(ingredient -> {
+            try(Connection conn = dataSource.getConnection();
+                PreparedStatement ps = conn.prepareStatement("INSERT INTO ingredient (name, unit_price, unit, update_time) VALUES (?, ?, ?, ?)");)
+            {
+                ps.setString(1, ingredient.getName());
+                ps.setDouble(2, ingredient.getUnitPrice());
+                ps.setString(3, ingredient.getUnit().toString());
+                ps.setDate(4,Date.valueOf(ingredient.getUpdateDateTime()));
+            }
+            catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }

@@ -1,5 +1,10 @@
 package entity;
 
+import db.DataSource;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,9 +14,21 @@ public class Dish {
     private String name;
     private int unitPrice;
     private List<DishIngredient> ingredients;
+    private final DataSource dataSource = new DataSource();
+
 
     public Dish() {
 
+    }
+
+    public Dish(String name, int unitPrice) {
+        this.name = name;
+        this.unitPrice = unitPrice;
+    }
+
+    public Dish(int idDish, String name, int unitPrice) {
+        this.name = name;
+        this.unitPrice = unitPrice;
     }
 
     public Dish(int idDish, String name, int unitPrice, List<DishIngredient> ingredients) {
